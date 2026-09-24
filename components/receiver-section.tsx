@@ -35,7 +35,7 @@ export function ReceiverSection({ form }: ReceiverSectionProps) {
           <Label htmlFor="receiverName">Your Name</Label>
           <Input
             id="receiverName"
-            placeholder="e.g., Bhargav"
+            placeholder="e.g., Amit"
             {...register("receiverName")}
             aria-describedby={errors.receiverName ? "receiverName-error" : undefined}
             aria-invalid={!!errors.receiverName}

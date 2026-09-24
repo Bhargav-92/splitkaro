@@ -7,20 +7,6 @@ import { Button } from "@/components/ui/button";
 import { generateUpiUri } from "@/lib/upi";
 import { formatINR } from "@/lib/format";
 
-// WhatsApp SVG icon (inline, no external CDN)
-function WhatsAppIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-    </svg>
-  );
-}
-
 interface QrCardProps {
   /** Name of the person who needs to pay */
   payerName: string;
@@ -38,48 +24,6 @@ interface QrCardProps {
   index?: number;
 }
 
-/**
- * Builds a WhatsApp chat URL with a pre-filled payment reminder message.
- * Uses wa.me deep link — opens WhatsApp directly to the contact.
- * Security: all text is encoded via encodeURIComponent, no HTML injection possible.
- */
-function buildWhatsAppUrl({
-  phone,
-  payerName,
-  receiverName,
-  receiverUpiId,
-  amount,
-  occasion,
-  upiUri,
-}: {
-  phone: string;
-  payerName: string;
-  receiverName: string;
-  receiverUpiId: string;
-  amount: number;
-  occasion: string;
-  upiUri: string;
-}) {
-  // Normalise to E.164 — strip spaces, prepend +91 for 10-digit Indian numbers
-  const digits = phone.replace(/\D/g, "");
-  const e164 = digits.length === 10 ? `91${digits}` : digits;
-
-  const message = [
-    `Hi ${payerName}! 👋`,
-    ``,
-    `Please pay *${formatINR(amount)}* for *${occasion}*.`,
-    ``,
-    `📲 Scan the QR code or tap the link below to pay directly:`,
-    upiUri,
-    ``,
-    `Pay to: *${receiverName}* (${receiverUpiId})`,
-    ``,
-    `_Please verify the receiver name and amount before paying._`,
-  ].join("\n");
-
-  return `https://wa.me/${e164}?text=${encodeURIComponent(message)}`;
-}
-
 export function QrCard({
   payerName,
   payerPhone,
@@ -93,11 +37,12 @@ export function QrCard({
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
   const [error, setError] = useState<string>("");
 
+  const occasionNote = occasion ? `Occasion: ${occasion}` : "Shared Bill";
   const upiUri = generateUpiUri({
     receiverUpiId,
     receiverName,
     amount,
-    paymentNote: `${occasion || "Shared Bill"} - ${payerName}'s share`,
+    paymentNote: `${occasionNote} (${payerName})`,
   });
 
   useEffect(() => {
@@ -108,7 +53,7 @@ export function QrCard({
         const dataUrl = await QRCode.toDataURL(upiUri, {
           width: 240,
           margin: 2,
-          color: { dark: "#1e1b4b", light: "#ffffff" },
+          color: { dark: "#000000", light: "#ffffff" },
           errorCorrectionLevel: "M",
         });
         if (!cancelled) setQrDataUrl(dataUrl);
@@ -118,7 +63,9 @@ export function QrCard({
     }
 
     generateQr();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [upiUri]);
 
   async function generateCanvasBlob(): Promise<Blob | null> {
@@ -133,30 +80,31 @@ export function QrCard({
     canvas.width = W;
     canvas.height = H;
 
+    // Solid white background
     ctx.fillStyle = "#ffffff";
-    ctx.roundRect(0, 0, W, H, 16);
-    ctx.fill();
+    ctx.fillRect(0, 0, W, H);
 
-    const grad = ctx.createLinearGradient(0, 0, W, 0);
-    grad.addColorStop(0, "#4f46e5");
-    grad.addColorStop(1, "#7c3aed");
-    ctx.fillStyle = grad;
-    ctx.roundRect(0, 0, W, 56, [16, 16, 0, 0]);
-    ctx.fill();
-
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 20px Inter, Arial, sans-serif";
+    // Black text for Payer Name
+    ctx.fillStyle = "#000000";
+    ctx.font = "bold 22px Inter, Arial, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(payerName, W / 2, 36);
+    ctx.fillText(payerName, W / 2, 42);
 
-    ctx.fillStyle = "#1e293b";
+    // Black text for Amount
+    ctx.fillStyle = "#000000";
     ctx.font = "bold 32px Inter, Arial, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(formatINR(amount), W / 2, 100);
+    ctx.fillText(formatINR(amount), W / 2, 92);
 
-    ctx.fillStyle = "#64748b";
-    ctx.font = "13px Inter, Arial, sans-serif";
-    ctx.fillText("Amount to pay", W / 2, 120);
+    ctx.fillStyle = "#333333";
+    ctx.font = "12px Inter, Arial, sans-serif";
+    ctx.fillText("Amount to pay", W / 2, 112);
+
+    if (occasion) {
+      ctx.fillStyle = "#000000";
+      ctx.font = "bold 12px Inter, Arial, sans-serif";
+      ctx.fillText(`Occasion: ${occasion}`, W / 2, 130);
+    }
 
     if (qrDataUrl) {
       const img = new Image();
@@ -165,39 +113,41 @@ export function QrCard({
         img.onerror = () => reject();
         img.src = qrDataUrl;
       });
-      const qrSize = 200;
+      const qrSize = 185;
       const qrX = (W - qrSize) / 2;
-      ctx.drawImage(img, qrX, 136, qrSize, qrSize);
+      const qrY = occasion ? 142 : 132;
+      ctx.drawImage(img, qrX, qrY, qrSize, qrSize);
     }
 
-    ctx.strokeStyle = "#e2e8f0";
+    // Divider line
+    ctx.strokeStyle = "#000000";
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(24, 350);
     ctx.lineTo(W - 24, 350);
     ctx.stroke();
 
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = "11px Inter, Arial, sans-serif";
+    ctx.fillStyle = "#333333";
+    ctx.font = "bold 11px Inter, Arial, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("PAY TO", W / 2, 372);
+    ctx.fillText("PAY TO", W / 2, 370);
 
-    ctx.fillStyle = "#1e293b";
+    ctx.fillStyle = "#000000";
     ctx.font = "bold 16px Inter, Arial, sans-serif";
-    ctx.fillText(receiverName, W / 2, 396);
+    ctx.fillText(receiverName, W / 2, 392);
 
-    ctx.fillStyle = "#6366f1";
-    ctx.font = "12px monospace";
-    ctx.fillText(receiverUpiId, W / 2, 416);
+    ctx.fillStyle = "#000000";
+    ctx.font = "bold 13px monospace";
+    ctx.fillText(receiverUpiId, W / 2, 414);
 
-    ctx.fillStyle = "#94a3b8";
+    ctx.fillStyle = "#444444";
     ctx.font = "10px Inter, Arial, sans-serif";
-    ctx.fillText("Verify details before paying", W / 2, 454);
+    ctx.fillText("Verify details before paying", W / 2, 450);
 
-    ctx.strokeStyle = "#e2e8f0";
-    ctx.lineWidth = 1;
-    ctx.roundRect(0.5, 0.5, W - 1, H - 1, 16);
-    ctx.stroke();
+    // Black outer border
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(1, 1, W - 2, H - 2);
 
     return new Promise((resolve) => {
       canvas.toBlob((blob) => resolve(blob), "image/png");
@@ -229,7 +179,7 @@ export function QrCard({
     const message = [
       `Hi ${payerName}! 👋`,
       ``,
-      `Please pay *${formatINR(amount)}* for *${occasion}*.`,
+      `Please pay *${formatINR(amount)}* for *${occasion || "Shared Bill"}*.`,
       ``,
       `Pay to: *${receiverName}* (${receiverUpiId})`,
       ``,
@@ -237,35 +187,29 @@ export function QrCard({
     ].join("\n");
 
     try {
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      if (
+        navigator.share &&
+        navigator.canShare &&
+        navigator.canShare({ files: [file] })
+      ) {
         await navigator.share({
           title: `Payment Request from ${receiverName}`,
           text: message,
           files: [file],
         });
       } else {
-        // Fallback: download the image if sharing isn't supported
         handleDownload();
-        alert("Your browser doesn't support sharing images directly. The QR code has been downloaded instead so you can attach it manually.");
+        alert(
+          "Your browser doesn't support sharing images directly. The QR code has been downloaded instead so you can attach it manually."
+        );
       }
     } catch (error) {
       console.error("Error sharing:", error);
     }
   }
 
-  // WhatsApp URL — only if phone number provided
-  const hasPhone = payerPhone && /^[6-9]\d{9}$/.test(payerPhone.replace(/\s+/g, ""));
-  const whatsAppUrl = hasPhone
-    ? buildWhatsAppUrl({
-        phone: payerPhone!,
-        payerName,
-        receiverName,
-        receiverUpiId,
-        amount,
-        occasion,
-        upiUri,
-      })
-    : null;
+  const hasPhone =
+    payerPhone && /^[6-9]\d{9}$/.test(payerPhone.replace(/\s+/g, ""));
 
   return (
     <div
@@ -317,23 +261,28 @@ export function QrCard({
             Pay to
           </p>
           <p className="text-sm font-bold text-slate-900">{receiverName}</p>
-          <p className="text-xs font-mono text-indigo-600 break-all">{receiverUpiId}</p>
+          <p className="text-xs font-mono text-indigo-600 break-all">
+            {receiverUpiId}
+          </p>
         </div>
 
         {/* Scan instruction */}
         <div className="flex items-start gap-2 rounded-lg bg-blue-50 border border-blue-100 px-3 py-2.5 text-left w-full">
           <Smartphone className="mt-0.5 h-3.5 w-3.5 text-blue-500 shrink-0" />
           <div>
-            <p className="text-xs font-medium text-blue-700">Scan with your UPI app</p>
+            <p className="text-xs font-medium text-blue-700">
+              Scan with your UPI app
+            </p>
             <p className="text-xs text-blue-600 mt-0.5">
-              Amount and receiver are pre-filled. Just enter your UPI PIN.
+              Occasion note and amount are pre-filled. Just enter your UPI PIN.
             </p>
           </div>
         </div>
 
         {/* Disclaimer */}
         <p className="text-xs text-slate-400 text-center leading-relaxed">
-          ⚠️ Always verify the receiver name and amount before completing the payment.
+          ⚠️ Always verify the receiver name and amount before completing the
+          payment.
         </p>
 
         {/* Action buttons */}
@@ -351,21 +300,7 @@ export function QrCard({
             Download
           </Button>
 
-          {/* WhatsApp Text Only Fallback */}
-          {whatsAppUrl ? (
-            <a
-              href={whatsAppUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`Send text to ${payerName} on WhatsApp`}
-              className="flex-[0.5] inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#25D366] bg-[#25D366] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#20BD5C] hover:border-[#20BD5C] transition-colors"
-              title="Send Text Message via WhatsApp"
-            >
-              <WhatsAppIcon className="h-3.5 w-3.5" />
-            </a>
-          ) : null}
-
-          {/* Share Image with Native API */}
+          {/* Share with Native API */}
           <Button
             variant="default"
             size="sm"
@@ -375,18 +310,12 @@ export function QrCard({
             aria-label={`Share QR code image for ${payerName}`}
           >
             <Share2 className="h-3.5 w-3.5" />
-            Share Image
+            Share
           </Button>
         </div>
-
-        {!hasPhone && (
-          <p className="text-[10px] text-slate-400 text-center -mt-2">
-            Add phone number above to enable WhatsApp text sharing
-          </p>
-        )}
       </div>
 
-      {/* Hidden canvas for download rendering */}
+      {/* Hidden canvas for download & share rendering */}
       <canvas ref={canvasRef} className="hidden" aria-hidden="true" />
     </div>
   );

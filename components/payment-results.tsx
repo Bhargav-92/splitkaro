@@ -29,7 +29,7 @@ export function PaymentResults({ data, onReset }: PaymentResultsProps) {
 
     if (navigator.share) {
       try {
-        await navigator.share({ title: "UPI Bill Split", text: shareText });
+        await navigator.share({ title: "SplitKaro", text: shareText });
       } catch {
         // User cancelled share — ignore
       }

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { BillForm } from "@/components/bill-form";
 
 export const metadata: Metadata = {
-  title: "Create a Bill Split — UPI Splitter",
+  title: "Create a Bill Split — SplitKaro",
   description:
     "Enter your UPI ID, add people, and generate individual payment QR codes instantly.",
 };

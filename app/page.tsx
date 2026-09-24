@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, QrCode, SplitSquareVertical, Smartphone, Users } from "lucide-react";
+import { ArrowRight, QrCode, Receipt, Smartphone, Users } from "lucide-react";
 import { formatINR } from "@/lib/format";
 
 export default function HomePage() {
@@ -38,7 +38,7 @@ export default function HomePage() {
               <div className="mt-8 flex flex-wrap items-center gap-4">
                 <Link
                   href="/split"
-                  className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-3.5 text-sm font-bold text-white hover:bg-indigo-700 transition-colors shadow-sm shadow-indigo-200"
+                  className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3.5 text-sm font-bold text-white hover:bg-indigo-700 transition-colors shadow-sm shadow-indigo-200"
                 >
                   Create a Split
                   <ArrowRight className="h-4 w-4" />
@@ -88,7 +88,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
             {[
               {
-                icon: SplitSquareVertical,
+                icon: Receipt,
                 step: "1",
                 title: "Enter your bill",
                 desc: "Add your UPI ID, the occasion, and the total amount. Your friends send money to you.",
@@ -142,7 +142,7 @@ export default function HomePage() {
           </p>
           <Link
             href="/split"
-            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-3.5 text-sm font-bold text-white hover:bg-indigo-700 transition-colors shadow-sm shadow-indigo-200"
+            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3.5 text-sm font-bold text-white hover:bg-indigo-700 transition-colors shadow-sm shadow-indigo-200"
           >
             Create a Split
             <ArrowRight className="h-4 w-4" />
@@ -155,7 +155,7 @@ export default function HomePage() {
 
 function PreviewCard() {
   const amount = 4000;
-  const people = ["Aarsh", "Vimal"];
+  const people = ["Amit", "Rohan"];
   const perPerson = amount / people.length;
 
   return (
@@ -201,7 +201,7 @@ function PreviewCard() {
 
       <div className="border-t border-slate-100 px-5 py-3 flex items-center justify-between">
         <span className="text-xs text-slate-400">Receive to:</span>
-        <span className="text-xs font-mono text-indigo-600">bhargav@upi</span>
+        <span className="text-xs font-mono text-indigo-600">example@upi</span>
       </div>
     </div>
   );

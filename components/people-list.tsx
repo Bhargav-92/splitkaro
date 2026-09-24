@@ -35,7 +35,7 @@ export function PeopleList({ form }: PeopleListProps) {
           {fields.length}
         </span>
         <span className="ml-auto text-xs text-slate-400">
-          Phone is optional — for WhatsApp sharing
+          Phone is optional
         </span>
       </div>
 
@@ -76,7 +76,7 @@ export function PeopleList({ form }: PeopleListProps) {
               <div className="space-y-1">
                 <Input
                   {...register(`people.${index}.name`)}
-                  placeholder={`Name (e.g., Aarsh)`}
+                  placeholder={`Name (e.g., Rohan)`}
                   aria-label={`Person ${index + 1} name`}
                   aria-describedby={
                     errors.people?.[index]?.name
@@ -131,7 +131,7 @@ export function PeopleList({ form }: PeopleListProps) {
                     id={`person-${index}-phone-hint`}
                     className="text-xs text-slate-400"
                   >
-                    Optional — to send QR via WhatsApp
+                    Optional — for sharing
                   </p>
                 )}
               </div>

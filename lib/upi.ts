@@ -37,7 +37,7 @@ export function generateUpiUri({
 /**
  * Validates that a string looks like a UPI ID.
  * UPI IDs follow the pattern: localpart@provider
- * e.g., bhargav@upi, user@okicici, mobile@paytm
+ * e.g., example@upi, user@okicici, mobile@paytm
  */
 export function isValidUpiId(upiId: string): boolean {
   // Basic UPI ID validation: must have exactly one @ with non-empty parts
