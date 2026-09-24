@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
+import { ServiceWorkerRegister } from "@/components/pwa/service-workder-register";
 
 import "./globals.css";
 
@@ -35,6 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body className="min-h-screen bg-slate-50 font-sans antialiased">
+        <ServiceWorkerRegister />
         <Navbar />
 
         <main>{children}</main>
